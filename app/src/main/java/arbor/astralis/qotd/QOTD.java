@@ -66,7 +66,7 @@ public final class QOTD {
         String content = "";
         
         if (guildSettings.getPingRoleId().isPresent()) {
-            content = "<@&" + guildSettings.getPingRoleId().get() + "> :aa03_cat_peek:";
+            content = "<@&" + guildSettings.getPingRoleId().get() + ">";
         }
 
         var message = MessageCreateSpec.builder()
