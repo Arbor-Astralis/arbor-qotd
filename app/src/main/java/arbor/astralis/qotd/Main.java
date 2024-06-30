@@ -39,8 +39,7 @@ import java.util.Optional;
 
 public final class Main {
     
-    public static final String BOT_NAME = "Cain's QOTD";
-    public static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     
     public static void main(String[] args) {
         Optional<String> botToken = Optional.empty();

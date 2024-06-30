@@ -2,24 +2,39 @@ package arbor.astralis.qotd;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Guild;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 public final class BackgroundQuestionDispatcher {
+
+    private static final Logger LOGGER = LogManager.getLogger();
+    private static volatile BackgroundQuestionDispatcher INSTANCE = null;
     
-    private static volatile BackgroundQuestionDispatcher INSTANCE = null; 
+    private final GatewayDiscordClient client;
+    private Timer timer;
     
     private BackgroundQuestionDispatcher(GatewayDiscordClient client) {
-        var backgroundTimer = new Timer("question-dispatcher");
+        this.client = client;
+        respawnTimer();
+    }
 
+    private void respawnTimer() {
+        if (timer != null) {
+            timer.cancel();
+        }
+        
+        timer = new Timer("question-dispatcher");
+        
         long msUntilTomorrow = getMsUntilNextDayUtc();
         long msUntilTomorrowMins = TimeUnit.MILLISECONDS.toMinutes(msUntilTomorrow);
-        Main.LOGGER.info("Background task scheduled with delay: " + msUntilTomorrow + "ms (" + msUntilTomorrowMins + " mins)");
+        LOGGER.info("New QOTD timer scheduled with delay: " + msUntilTomorrow + "ms (" + msUntilTomorrowMins + " mins)");
         
-        backgroundTimer.scheduleAtFixedRate(
-            new QuestionDispatcherTask(client), 
+        timer.scheduleAtFixedRate(
+            new QuestionDispatcherTask(client, this::respawnTimer),
             msUntilTomorrow,
             TimeUnit.DAYS.toMillis(1)
         );
@@ -39,16 +54,18 @@ public final class BackgroundQuestionDispatcher {
         long msNow = System.currentTimeMillis();
         long msElapsedSinceToday = msNow % TimeUnit.DAYS.toMillis(1);
         long msTomorrow = msNow - msElapsedSinceToday + TimeUnit.DAYS.toMillis(1);
-        
+
         return msTomorrow - msNow;
     }
 
     private static final class QuestionDispatcherTask extends TimerTask {
         
         private final GatewayDiscordClient client;
-        
-        private QuestionDispatcherTask(GatewayDiscordClient client) {
+        private final Runnable respawnTimerTask;
+
+        private QuestionDispatcherTask(GatewayDiscordClient client, Runnable respawnTimerTask) {
             this.client = client;
+            this.respawnTimerTask = respawnTimerTask;
         }
         
         @Override
@@ -61,9 +78,13 @@ public final class BackgroundQuestionDispatcher {
                         return;
                     }
                     
-                    QOTD.postRandomApprovedQuestion(client, guild.getId().asLong()).subscribe();
+                    long guildId = guild.getId().asLong();
+                    
+                    QOTD.postRandomApprovedQuestion(client, guildId).subscribe();
                 })
                 .subscribe();
+            
+            respawnTimerTask.run();
         }
     }
 }

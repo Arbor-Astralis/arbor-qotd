@@ -7,19 +7,26 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
+import discord4j.rest.util.Color;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 public final class QOTD {
+
+    private static final Logger LOGGER = LogManager.getLogger();
     
     private QOTD() {
         // Helper class no instantiation
     }
     
     public static Mono<?> postRandomApprovedQuestion(GatewayDiscordClient client, long guildId) {
+        LOGGER.info("Dispatching next approved QOTD for guild: " + guildId);
         return doPostImpl(guildId, client);
     }
     
@@ -39,7 +46,7 @@ public final class QOTD {
         @Nullable Long modChannelId = guildSettings.getModChannelId().orElse(null);
 
         if (questionChannelId == null) {
-            Main.LOGGER.warn("Cannot post question for guild due to no setup: " + guildId);
+            LOGGER.warn("Cannot post question for guild due to no setup: " + guildId);
             return Mono.empty();
         }
         
@@ -50,7 +57,7 @@ public final class QOTD {
             return dispatchQuestionForGuild(nextQuestion.get(), questionChannel, guildSettings)
                 .then(possiblyNotifyLowApprovedQuestionCount(questionChannel, modChannelId, guildSettings, client));
         } else {
-            return tryNotifyNoApprovedQuestionsForGuild(questionChannel, modChannelId, guildSettings, client);
+            return tryNotifyNoApprovedQuestionsForGuild(questionChannel, modChannelId, client);
         }
     }
 
@@ -59,14 +66,17 @@ public final class QOTD {
         MessageChannel questionChannel,
         GuildSettings guildSettings
     ) {
+        var random = new Random();
         var embed = EmbedCreateSpec.builder()
-            .description("### " + question.getText() + "\n\nby <@" + question.getAuthorId() + ">")
+            .description("**" + question.getText() + "**\n\nby <@" + question.getAuthorId() + ">")
+            .color(Color.of(random.nextInt(255), random.nextInt(255), random.nextInt(255)))
+            .footer("Write your response in a new thread", null)
             .build();
 
         String content = "";
         
         if (guildSettings.getPingRoleId().isPresent()) {
-            content = "<@&" + guildSettings.getPingRoleId().get() + ">";
+            content += "<@&" + guildSettings.getPingRoleId().get() + ">";
         }
 
         var message = MessageCreateSpec.builder()
@@ -106,7 +116,11 @@ public final class QOTD {
         return Mono.empty();
     }
     
-    private static Mono<?> tryNotifyNoApprovedQuestionsForGuild(MessageChannel questionChannel, Long modChannelId, GuildSettings guildSettings, GatewayDiscordClient client) {
+    private static Mono<?> tryNotifyNoApprovedQuestionsForGuild(
+        MessageChannel questionChannel, 
+        Long modChannelId, 
+        GatewayDiscordClient client
+    ) {
         MessageChannel channel = questionChannel;
 
         if (modChannelId != null) {

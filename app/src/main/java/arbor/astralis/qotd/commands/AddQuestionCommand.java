@@ -1,6 +1,9 @@
 package arbor.astralis.qotd.commands;
 
-import arbor.astralis.qotd.*;
+import arbor.astralis.qotd.Branding;
+import arbor.astralis.qotd.GuildSettings;
+import arbor.astralis.qotd.Question;
+import arbor.astralis.qotd.Settings;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent;
@@ -14,6 +17,8 @@ import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -21,7 +26,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class AddQuestionCommand implements ApplicationCommand {
-    
+
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final String QUESTION_PARAMETER_NAME = "question";
     
     private static final String BUTTON_ACTION_ACCEPT = "accept";
@@ -188,7 +194,7 @@ public final class AddQuestionCommand implements ApplicationCommand {
     @Override
     public Mono<?> onButtonInteraction(String[] payload, ButtonInteractionEvent event) {
         if (payload.length != 3) {
-            Main.LOGGER.warn("Malformed ButtonInteraction for AddQuestionCommand, size mismatch: " + payload.length);
+            LOGGER.warn("Malformed ButtonInteraction for AddQuestionCommand, size mismatch: " + payload.length);
             return Mono.empty();
         }
         
@@ -198,7 +204,7 @@ public final class AddQuestionCommand implements ApplicationCommand {
         try {
              questionId = Long.parseLong(rawQuestionId);
         } catch (NumberFormatException e) {
-            Main.LOGGER.warn("Failed to parse questionId: " + rawQuestionId + " for payload: " + event.getCustomId());
+            LOGGER.warn("Failed to parse questionId: " + rawQuestionId + " for payload: " + event.getCustomId());
             return Mono.empty();
         }
         
@@ -206,7 +212,7 @@ public final class AddQuestionCommand implements ApplicationCommand {
 
         Optional<Snowflake> guildId = event.getInteraction().getGuildId();
         if (guildId.isEmpty()) {
-            Main.LOGGER.warn("No guildId for AddQuestionCommand ButtonInteraction: " + event.getCustomId());
+            LOGGER.warn("No guildId for AddQuestionCommand ButtonInteraction: " + event.getCustomId());
             return Mono.empty();
         }
         
@@ -217,7 +223,7 @@ public final class AddQuestionCommand implements ApplicationCommand {
         } else if (BUTTON_ACTION_REJECT.equals(actionId)) {
             return rejectQuestion(questionId, guildSettings, event);
         } else {
-            Main.LOGGER.warn("Undefined actionId for AddQuestionCommand ButtonInteraction: " + event.getCustomId());
+            LOGGER.warn("Undefined actionId for AddQuestionCommand ButtonInteraction: " + event.getCustomId());
             return Mono.empty();
         }
     }

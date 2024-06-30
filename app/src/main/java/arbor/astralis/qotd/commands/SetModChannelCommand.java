@@ -2,12 +2,13 @@ package arbor.astralis.qotd.commands;
 
 import arbor.astralis.qotd.Branding;
 import arbor.astralis.qotd.GuildSettings;
-import arbor.astralis.qotd.Main;
 import arbor.astralis.qotd.Settings;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -15,7 +16,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class SetModChannelCommand implements ApplicationCommand {
-    
+
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final String CHANNEL_PARAMETER_NAME = "channel";
     
     
@@ -74,7 +76,7 @@ public final class SetModChannelCommand implements ApplicationCommand {
         try {
             channelId = Long.parseLong(rawChannelId);
         } catch (NumberFormatException e) {
-            Main.LOGGER.error("Failed to parse channel ID", e);
+            LOGGER.error("Failed to parse channel ID", e);
         }
         
         if (channelId < 0) {

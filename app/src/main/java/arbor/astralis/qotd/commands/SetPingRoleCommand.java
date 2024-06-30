@@ -2,19 +2,21 @@ package arbor.astralis.qotd.commands;
 
 import arbor.astralis.qotd.Branding;
 import arbor.astralis.qotd.GuildSettings;
-import arbor.astralis.qotd.Main;
 import arbor.astralis.qotd.Settings;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
 import java.util.Optional;
 
 public final class SetPingRoleCommand implements ApplicationCommand {
-    
+
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final String ROLE_PARAMETER_NAME = "role";
     
     
@@ -72,7 +74,7 @@ public final class SetPingRoleCommand implements ApplicationCommand {
         try {
             roleId = Long.parseLong(rawRoleId);
         } catch (NumberFormatException e) {
-            Main.LOGGER.error("Failed to parse role ID", e);
+            LOGGER.error("Failed to parse role ID", e);
         }
 
         if (roleId < 0) {
