@@ -29,7 +29,7 @@ public final class Branding {
 
     public static String getQuestionPendingApprovalMessageForSubmitter() {
         return takeRandom(
-            "All done! Your question has been submitted for approval. I'll let you know once it's approved~"
+            "All done! Your question has been submitted for approval."
         );
     }
 
