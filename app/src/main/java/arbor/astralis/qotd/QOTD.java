@@ -55,9 +55,9 @@ public final class QOTD {
         
         if (nextQuestion.isPresent()) {
             return dispatchQuestionForGuild(nextQuestion.get(), questionChannel, guildSettings)
-                .then(possiblyNotifyLowApprovedQuestionCount(questionChannel, modChannelId, guildSettings, client));
+                .then(possiblyNotifyLowApprovedQuestionCount(questionChannel, guildSettings, client));
         } else {
-            return tryNotifyNoApprovedQuestionsForGuild(questionChannel, modChannelId, client);
+            return tryNotifyNoApprovedQuestionsForGuild(questionChannel, client);
         }
     }
 
@@ -93,44 +93,22 @@ public final class QOTD {
     
     private static Mono<?> possiblyNotifyLowApprovedQuestionCount(
         MessageChannel questionChannel,
-        @Nullable Long modChannelId,
         GuildSettings guildSettings,
         GatewayDiscordClient client
     ) {
-        MessageChannel channel = questionChannel;
-        
-        if (modChannelId != null) {
-            channel = (MessageChannel) client.getChannelById(Snowflake.of(modChannelId)).block();
-            
-            if (channel == null) {
-                channel = questionChannel;
-            }
-        }
-        
         int remainingQuestions = guildSettings.getUndispatchedApprovedQuestionCount();
         
-        if (remainingQuestions <= 4) {
-            return channel.createMessage(Branding.getLowApprovedUndispatchedQuestionsMessage(remainingQuestions));
+        if (remainingQuestions <= 3) {
+            return questionChannel.createMessage(Branding.getLowApprovedUndispatchedQuestionsMessage(remainingQuestions));
         }
         
         return Mono.empty();
     }
     
     private static Mono<?> tryNotifyNoApprovedQuestionsForGuild(
-        MessageChannel questionChannel, 
-        Long modChannelId, 
+        MessageChannel questionChannel,
         GatewayDiscordClient client
     ) {
-        MessageChannel channel = questionChannel;
-
-        if (modChannelId != null) {
-            channel = (MessageChannel) client.getChannelById(Snowflake.of(modChannelId)).block();
-
-            if (channel == null) {
-                channel = questionChannel;
-            }
-        }
-
-        return channel.createMessage(Branding.getNoMoreApprovedUndispatchedQuestionsMessage());
+        return questionChannel.createMessage(Branding.getNoMoreApprovedUndispatchedQuestionsMessage());
     }
 }

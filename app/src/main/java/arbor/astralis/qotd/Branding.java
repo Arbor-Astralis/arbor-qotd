@@ -69,19 +69,19 @@ public final class Branding {
 
     public static String getNoMoreApprovedUndispatchedQuestionsMessage() {
         return takeRandom(
-            "Um... guys? There's no more approved QOTD questions for me to send anymore",
-            "Does somebody still care around here?! We need some QOTD questions, it's EMPTY!",
-            "Any QOTD questions for me tomorrow?"
+            "There's no more approved QOTD questions to share anymore :(\nSubmit some using `/qotd-add`",
+            "Does anybody still care around here?! We need some QOTD questions, it's EMPTY!\nPlease submit some using `/qotd-add`",
+            "Any QOTD questions for me tomorrow? You can submit some using `/qotd-add`"
         );
     }
 
     public static String getLowApprovedUndispatchedQuestionsMessage(int remainingQuestions) {
         if (remainingQuestions > 1) {
-            return "Just so you know... there are " + remainingQuestions + " questions left for QOTD";
+            return "There are " + remainingQuestions + " questions left for QOTD -- please submit some using `/qotd-add`!";
         } else if (remainingQuestions == 1) {
             return "Hey uh... There's only 1 question left for QOTD, guys...";
         } else {
-            return "Okay guys, I got no more QOTDs for tomorrow...";
+            return "I got no more QOTDs for tomorrow :(";
         }
     }
 }
