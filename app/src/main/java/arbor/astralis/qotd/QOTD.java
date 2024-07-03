@@ -66,22 +66,17 @@ public final class QOTD {
         MessageChannel questionChannel,
         GuildSettings guildSettings
     ) {
-        var random = new Random();
-        var embed = EmbedCreateSpec.builder()
-            .description("**" + question.getText() + "**\n\nby <@" + question.getAuthorId() + ">")
-            .color(Color.of(random.nextInt(255), random.nextInt(255), random.nextInt(255)))
-            .footer("Write your response in a new thread", null)
-            .build();
-
-        String content = "";
+        String content = "## " + question.getText() + "**";
         
         if (guildSettings.getPingRoleId().isPresent()) {
-            content += "<@&" + guildSettings.getPingRoleId().get() + ">";
+            content += "\n<@&" + guildSettings.getPingRoleId().get() + ">";
         }
+        
+        content += "\n\nQuestion submitted by <@" + question.getAuthorId() + ">\n" +
+            "Respond in the thread below!";
 
         var message = MessageCreateSpec.builder()
             .content(content)
-            .embeds(List.of(embed))
             .build();
         
         Mono<Message> messageFlow = questionChannel.createMessage(message);
