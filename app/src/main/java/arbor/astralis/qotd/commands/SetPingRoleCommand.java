@@ -46,7 +46,7 @@ public final class SetPingRoleCommand implements ApplicationCommand {
             .type(8)
             .name(ROLE_PARAMETER_NAME)
             .description("The role to ping when a new QOTD is posted")
-            .required(true)
+            .required(false)
             .build();
 
         request.addOption(option);
@@ -64,9 +64,7 @@ public final class SetPingRoleCommand implements ApplicationCommand {
 
         String rawRoleId = optionValues.get(ROLE_PARAMETER_NAME);
         if (rawRoleId == null || rawRoleId.isBlank()) {
-            return event.reply()
-                .withEphemeral(true)
-                .withContent(Branding.getUnexpectedErrorMessage("Missing rawRoleId"));
+            rawRoleId = String.valueOf(-1);
         }
 
         long roleId = -1;
@@ -75,12 +73,6 @@ public final class SetPingRoleCommand implements ApplicationCommand {
             roleId = Long.parseLong(rawRoleId);
         } catch (NumberFormatException e) {
             LOGGER.error("Failed to parse role ID", e);
-        }
-
-        if (roleId < 0) {
-            return event.reply()
-                .withEphemeral(true)
-                .withContent(Branding.getUnexpectedErrorMessage("Error parsing rawRoleId"));
         }
 
         Optional<Snowflake> guildId = event.getInteraction().getGuildId();
@@ -92,7 +84,7 @@ public final class SetPingRoleCommand implements ApplicationCommand {
         }
 
         GuildSettings settings = Settings.forGuild(guildId.get().asLong());
-        settings.setPingRoleId(roleId);
+        settings.setPingRoleId(roleId >= 0 ? roleId : null);
 
         return event.reply()
             .withContent(Branding.getPingRoleSetSuccessfulMessage(roleId));

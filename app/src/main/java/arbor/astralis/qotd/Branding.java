@@ -56,7 +56,11 @@ public final class Branding {
     }
 
     public static String getPingRoleSetSuccessfulMessage(long roleId) {
-        return "QOTD ping role updated successfully! New role is: <@&" + roleId + ">";
+        if (roleId >= 0) {
+            return "QOTD ping role updated successfully! New role is: <@&" + roleId + ">";
+        } else {
+            return "QOTD ping role disabled!";
+        }
     }
 
     public static String getQuestionAllRemovedMessage() {
