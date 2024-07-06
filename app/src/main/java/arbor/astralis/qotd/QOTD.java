@@ -66,7 +66,7 @@ public final class QOTD {
         MessageChannel questionChannel,
         GuildSettings guildSettings
     ) {
-        String content = "## " + question.getText() + "**";
+        String content = "## " + question.getText();
         
         if (guildSettings.getPingRoleId().isPresent()) {
             content += "\n<@&" + guildSettings.getPingRoleId().get() + ">";
